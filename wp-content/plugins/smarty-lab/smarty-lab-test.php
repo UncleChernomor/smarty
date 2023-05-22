@@ -21,7 +21,6 @@ if ( !class_exists('Smarty_Lab_Test') ) {
             add_action('widgets_init', [$this, 'register_widgets']);
 
         }
-
         public function register_widgets() 
         {
             register_widget('Smarty_Lab_Widget');

@@ -1,5 +1,4 @@
 <?php
-
 class Smarty_Lab_Shortcodes
 {
     public function __construct()
@@ -7,12 +6,18 @@ class Smarty_Lab_Shortcodes
         add_action('init', [$this, 'init_shortcodes']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue']);
         add_action('wp_ajax_show_real_estate',[$this, 'show_real_estate']);
-        add_action('wp_ajax_nopriv_show_real_estate', 'show_real_estate');
+        add_action('wp_ajax_nopriv_show_real_estate', [$this, 'show_real_estate']);
     }
 
     public function enqueue ()
     {
-        wp_enqueue_script('smarty-lab-ajax', plugins_url('smarty-test/assets/js/front/app-ajax.js'));
+        wp_enqueue_script(
+            'smarty-lab-ajax',
+            plugins_url('smarty-lab/assets/js/front/app-ajax.js'),
+            ['jquery'],
+            '0.1',
+            true
+        );
         wp_localize_script('smarty-lab-ajax', 
                             'smarty_lab_ajax_data',
                             [
@@ -24,6 +29,13 @@ class Smarty_Lab_Shortcodes
 
     public function show_real_estate():void
     {
+        print_r($_GET);
+        $args = [
+
+        ];
+
+        $custom_query = new WP_Query();
+
         echo "<h2>hello Ajax</h2>";
 
         wp_die();
@@ -46,9 +58,12 @@ class Smarty_Lab_Shortcodes
             $atts
         ));
 
-        $output = '<div class="filter">';
+        $output = '<div id="app" class="filter">';
+
         $output .= '<form id="filter-form" method="post" class="filter-form" action="' .
             get_post_type_archive_link("real-estate") . '">';
+
+        $output .= '<input type="hidden" name="action" value="show_real_estate">';
 
         if ( isset($location) && $location === '1' ) {
             $output .= $this -> show_filter_location();
@@ -151,5 +166,4 @@ class Smarty_Lab_Shortcodes
         $output .= '</select>';
         return $output;
     }
-
 }
