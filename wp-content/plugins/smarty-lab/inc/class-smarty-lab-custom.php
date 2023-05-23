@@ -17,7 +17,7 @@ class Smarty_Lab_Custom
                 'rewrite' => ['slug' => 'real-estates'],
                 'label' => esc_html__('Real Estate','smarty-lab'),
                 'supports' => ['title', 'editor', 'thumbnail'],
-            ]
+            ],
         );
     }
 

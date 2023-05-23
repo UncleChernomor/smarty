@@ -11,6 +11,7 @@ class Smarty_Lab_Shortcodes
 
     public function enqueue ()
     {
+
         wp_enqueue_script(
             'smarty-lab-ajax',
             plugins_url('smarty-lab/assets/js/front/app-ajax.js'),
@@ -19,7 +20,7 @@ class Smarty_Lab_Shortcodes
             true
         );
         wp_localize_script('smarty-lab-ajax', 
-                            'smarty_lab_ajax_data',
+                            'smartyLabAjaxData',
                             [
                                 'ajaxurl' => admin_url('admin-ajax.php'),
                                 'nonce' => wp_create_nonce('ajax-nonce')
@@ -29,15 +30,41 @@ class Smarty_Lab_Shortcodes
 
     public function show_real_estate():void
     {
+        echo '<pre>';
+        print_r($_POST);
+        echo '</pre>';
+        echo '<pre>';
         print_r($_GET);
-        $args = [
+        echo '</pre>';
 
+        $args = [
+            'post_type' => 'real-estate',
+            'posts_per_archive_page' => 2,
+            'paged' => isset($_POST['paged']) ? $_POST['paged'] : 1,
         ];
 
-        $custom_query = new WP_Query();
-
-        echo "<h2>hello Ajax</h2>";
-
+        global $custom_query;
+        $custom_query= new WP_Query($args);
+        ?>
+         <div style="display: flex; justify-content: space-between;">
+         <?php while ( $custom_query->have_posts() ) : ?>
+            <?php $custom_query->the_post(); ?>
+             <div class="card-real-estate">
+                <h2><?= get_the_title($custom_query->ID); ?> </h2>
+                <a href="<?= get_the_permalink(); ?>"><?php esc_attr_e("More...", "smarty-lab");?></a>
+             </div>
+        <?php endwhile; ?>
+        </div>
+        <?php
+        $big = 999999999;
+        echo paginate_links( array(
+        'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+        'format' => '?paged=%#%',
+        'current' => $args['paged'],
+        'total' => $custom_query->max_num_pages
+    ) );;
+        echo "<h3>AJAX the best</h3>";
+        wp_reset_postdata();
         wp_die();
     }
 
@@ -58,8 +85,8 @@ class Smarty_Lab_Shortcodes
             $atts
         ));
 
-        $output = '<div id="app" class="filter">';
-
+        $output = '<sectin id="real-filter" class="filter">';
+        $output .= '<h2>' . esc_html__('Filter Real Estates', 'smarty-lab') . '</h2>';
         $output .= '<form id="filter-form" method="post" class="filter-form" action="' .
             get_post_type_archive_link("real-estate") . '">';
 

@@ -1,23 +1,58 @@
 jQuery(document).ready(function ($) {
+    getData();
+
     $('#filter-form').on('submit', function (event) {
         event.preventDefault();
+        getData();
+    })
 
+    console.log('hi');
+    console.dir($('.real-estate__box a'));
+
+    function getData() {
         $.ajax({
-            url: smarty_lab_ajax_data.ajaxurl,
+            url: smartyLabAjaxData.ajaxurl,
             type: 'POST',
             data: {
                 'action': 'show_real_estate',
-                'nonce': smarty_lab_ajax_data.nonce,
+                'nonce': smartyLabAjaxData.nonce,
             },
             success: function (data) {
-              $('#app').append(data);
+                const realEstateBox = $('.real-estate__box');
+                realEstateBox.children().remove();
+                realEstateBox.append(data);
+                getDataPagination();
             },
             error: function (error) {
 
             }
         });
-    })
-    console.dir($('#filter-form'));
+    }
+
+    function getDataPagination() {
+        $('.real-estate__box a.page-numbers').on('click', function (event) {
+            event.preventDefault();
+            $.ajax({
+                url: smartyLabAjaxData.ajaxurl,
+                type: 'POST',
+                data: {
+                    'action': 'show_real_estate',
+                    'nonce': smartyLabAjaxData.nonce,
+                    'paged': this.search.slice(-1),
+                },
+                success: function (data) {
+                    const realEstateBox = $('.real-estate__box');
+                    realEstateBox.children().remove();
+                    realEstateBox.append(data);
+                    getDataPagination();
+                },
+                error: function (error) {
+
+                }
+            });
+            console.dir(this);
+        });
+    }
 });
 
 // document.addEventListener('DOMContentLoaded', () => {
