@@ -12,6 +12,8 @@ class Smarty_Lab_Shortcodes
     public function enqueue ()
     {
 
+        wp_enqueue_style( 'smarty-lab-style',  plugins_url('smarty-lab/assets/css/front/app-style.css'));
+
         wp_enqueue_script(
             'smarty-lab-ajax',
             plugins_url('smarty-lab/assets/js/front/app-ajax.js'),
@@ -19,6 +21,7 @@ class Smarty_Lab_Shortcodes
             '0.1',
             true
         );
+
         wp_localize_script('smarty-lab-ajax', 
                             'smartyLabAjaxData',
                             [
@@ -33,15 +36,47 @@ class Smarty_Lab_Shortcodes
         echo '<pre>';
         print_r($_POST);
         echo '</pre>';
+
+        $form_data = [];
+
+        if ( ! empty($_POST['form-data']) ) {
+            parse_str($_POST['form-data'], $form_data);
+        }
+
         echo '<pre>';
-        print_r($_GET);
+        print_r($form_data);
         echo '</pre>';
 
         $args = [
             'post_type' => 'real-estate',
-            'posts_per_archive_page' => 2,
-            'paged' => isset($_POST['paged']) ? $_POST['paged'] : 1,
+            'posts_per_archive_page' => 3,
+            'paged' => !empty($_POST['paged']) ? $_POST['paged'] : 1,
+            'meta_query' => [
+                    'relation' => 'AND',
+            ],
         ];
+        
+        if ( !empty($form_data['smarty-location']) ) {
+            $args['tax_query'] = [
+                                    [
+                                        'taxonomy' => 'location',
+                                        'terms' => $form_data['smarty-location'],
+                                    ]
+							];
+        }
+        
+        if ( !empty($form_data['type_building']) ) {
+					$args['meta_query'] =  [
+                                        [
+											'key' => 'type_building',
+                                             'value' => $form_data['type_building']
+                                        ],
+                                    ];
+        }
+			
+			echo '<pre>';
+			print_r($args);
+			echo '</pre>';
 
         global $custom_query;
         $custom_query= new WP_Query($args);
@@ -63,7 +98,6 @@ class Smarty_Lab_Shortcodes
         'current' => $args['paged'],
         'total' => $custom_query->max_num_pages
     ) );;
-        echo "<h3>AJAX the best</h3>";
         wp_reset_postdata();
         wp_die();
     }
@@ -90,7 +124,7 @@ class Smarty_Lab_Shortcodes
         $output .= '<form id="filter-form" method="post" class="filter-form" action="' .
             get_post_type_archive_link("real-estate") . '">';
 
-        $output .= '<input type="hidden" name="action" value="show_real_estate">';
+//        $output .= '<input type="hidden" name="action" value="show_real_estate">';
 
         if ( isset($location) && $location === '1' ) {
             $output .= $this -> show_filter_location();
@@ -185,7 +219,7 @@ class Smarty_Lab_Shortcodes
 
     public function show_filter_type_building():string
     {
-        $output = '<select name="type-building" style="display: block">';
+        $output = '<select name="type_building" style="display: block">';
         $output .= '<option value="">Choose type building</option>';
         $output .= '<option value="panel">Panel</option>';
         $output .= '<option value="briks">Bricks</option>';

@@ -3,25 +3,28 @@ jQuery(document).ready(function ($) {
 
     $('#filter-form').on('submit', function (event) {
         event.preventDefault();
-        getData();
+        getData(this);
     })
 
     console.log('hi');
     console.dir($('.real-estate__box a'));
 
-    function getData() {
+    function getData(formInstance) {
         $.ajax({
             url: smartyLabAjaxData.ajaxurl,
             type: 'POST',
             data: {
                 'action': 'show_real_estate',
                 'nonce': smartyLabAjaxData.nonce,
+                'form-data': $(formInstance).serialize(),
             },
             success: function (data) {
                 const realEstateBox = $('.real-estate__box');
                 realEstateBox.children().remove();
                 realEstateBox.append(data);
+
                 getDataPagination();
+
             },
             error: function (error) {
 
@@ -39,18 +42,20 @@ jQuery(document).ready(function ($) {
                     'action': 'show_real_estate',
                     'nonce': smartyLabAjaxData.nonce,
                     'paged': this.search.slice(-1),
+                    'form-data': $('#filter-form').serialize(),
                 },
                 success: function (data) {
                     const realEstateBox = $('.real-estate__box');
                     realEstateBox.children().remove();
                     realEstateBox.append(data);
+
                     getDataPagination();
+
                 },
                 error: function (error) {
 
                 }
             });
-            console.dir(this);
         });
     }
 });
