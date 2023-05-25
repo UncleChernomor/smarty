@@ -33,20 +33,12 @@ class Smarty_Lab_Shortcodes
 
     public function show_real_estate():void
     {
-        echo '<pre>';
-        print_r($_POST);
-        echo '</pre>';
-
         $form_data = [];
 
         if ( ! empty($_POST['form-data']) ) {
             parse_str($_POST['form-data'], $form_data);
         }
-
-        echo '<pre>';
-        print_r($form_data);
-        echo '</pre>';
-
+        
         $args = [
             'post_type' => 'real-estate',
             'posts_per_archive_page' => 3,
@@ -66,30 +58,74 @@ class Smarty_Lab_Shortcodes
         }
         
         if ( !empty($form_data['type_building']) ) {
-					$args['meta_query'] =  [
-                                        [
-											'key' => 'type_building',
-                                             'value' => $form_data['type_building']
-                                        ],
-                                    ];
+            $args['meta_query'][] =  [
+                    'key' => 'type_building',
+                     'value' => $form_data['type_building'],
+                ];
+        }
+        
+        if ( !empty($form_data['smarty-lab-name']) ) {
+            $args['meta_query'][] =  [
+                        'key' => 'name',
+                        'value' => $form_data['smarty-lab-name'],
+                        'compare' => 'LIKE',
+           ];
         }
 			
-			echo '<pre>';
-			print_r($args);
-			echo '</pre>';
-
+			if ( !empty($form_data['smarty-lab-name']) ) {
+				$args['meta_query'][] =  [
+								'key' => 'name',
+								'value' => $form_data['smarty-lab-name'],
+								'compare' => 'LIKE',
+				];
+			}
+			
+			if ( !empty($form_data['smarty-lab-coords']) ) {
+				$args['meta_query'][] =  [
+								'key' => 'coords',
+								'value' => $form_data['smarty-lab-coords'],
+				            ];
+			}
+			
+			if ( !empty($form_data['min-floor']) && !empty($form_data['max-floor']) ) {
+				$args['meta_query'][] = [
+                            'key' => 'floor',
+                            'value' => [
+                                    $form_data['min-floor'],
+                                    $form_data['max-floor'],
+                            ],
+                            'type' => 'numeric',
+                            'compare' => 'BETWEEN',
+						];
+			}
+        
         global $custom_query;
         $custom_query= new WP_Query($args);
-        ?>
-         <div style="display: flex; justify-content: space-between;">
+    ?>
+         <div class="real-estate__cards">
+      
          <?php while ( $custom_query->have_posts() ) : ?>
-            <?php $custom_query->the_post(); ?>
-             <div class="card-real-estate">
-                <h2><?= get_the_title($custom_query->ID); ?> </h2>
+           
+           <?php $custom_query->the_post(); ?>
+            
+             <article class="card-real-estate">
+                <header>
+                    <h2><?= get_the_title(); ?></h2>
+                </header>
+                 <div>
+                     <div>Location: <?php echo get_the_terms(get_the_ID(), 'location')[0]->name; ?></div>
+                     <div>Name: <?php echo get_post_meta(get_the_ID(), 'name', true); ?></div>
+                     <div>Coords: <?php echo get_post_meta(get_the_ID(), 'coords', true); ?></div>
+                     <div>Floor: <?php echo get_post_meta(get_the_ID(), 'floor', true); ?></div>
+                     <div>Type Building: <?php echo get_post_meta(get_the_ID(), 'type_building', true); ?></div>
+                 </div>
                 <a href="<?= get_the_permalink(); ?>"><?php esc_attr_e("More...", "smarty-lab");?></a>
-             </div>
+             </article>
+       
         <?php endwhile; ?>
+       
         </div>
+       
         <?php
         $big = 999999999;
         echo paginate_links( array(
@@ -97,7 +133,8 @@ class Smarty_Lab_Shortcodes
         'format' => '?paged=%#%',
         'current' => $args['paged'],
         'total' => $custom_query->max_num_pages
-    ) );;
+    ) );
+        
         wp_reset_postdata();
         wp_die();
     }
@@ -194,7 +231,7 @@ class Smarty_Lab_Shortcodes
 
     public function show_filter_floor():string
     {
-        $output = '<div style="background-color: lightgrey; padding: 20px; width: 50%;">';
+        $output = '<div class="form__count-foor">';
         $output .= '<h3>Choose count floor</h3>';
         $output .= '<select name="min-floor">';
         $output .= '<option value="">Choose min floor</option>';
@@ -221,9 +258,9 @@ class Smarty_Lab_Shortcodes
     {
         $output = '<select name="type_building" style="display: block">';
         $output .= '<option value="">Choose type building</option>';
-        $output .= '<option value="panel">Panel</option>';
-        $output .= '<option value="briks">Bricks</option>';
-        $output .= '<option value="foam-block">Foam blocks</option>';
+        $output .= '<option value="Panel">Panel</option>';
+        $output .= '<option value="Brick">Brick</option>';
+        $output .= '<option value="Foam Block">Foam Block</option>';
         $output .= '</select>';
         return $output;
     }
