@@ -8,7 +8,8 @@ $description = get_the_archive_description();
     <div class="real-estate__box">
     </div>
 <?php
-echo do_shortcode('[smarty-lab]');
+
+//echo do_shortcode('[smarty-lab]');
 
 get_footer();
 ?>

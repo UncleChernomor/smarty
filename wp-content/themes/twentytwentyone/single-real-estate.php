@@ -1,6 +1,6 @@
+<?php get_header(); ?>
+<div class="smarty-main">
 <?php
-get_header();
-
 /* Start the Loop */
 while ( have_posts() ) :
     the_post();
@@ -8,7 +8,6 @@ while ( have_posts() ) :
     esc_html_e('Location:', '');
     $locations = get_the_terms(get_the_ID(), 'location');
     if (!is_wp_error($locations) && $locations !== false) {
-
         foreach ($locations as $current_location) {
             echo " " . esc_html__($current_location->name);
         }
@@ -38,6 +37,7 @@ while ( have_posts() ) :
             Type building: <?= $type; ?>
         </div>
     </div>
+</div>
     <?php
 
     if ( is_attachment() ) {
